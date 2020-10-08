@@ -1,0 +1,54 @@
+version: '2'
+services:
+  mlflow:
+    image: "romanchereshnev/mlflow"
+    ports:
+      - "5000:5000"
+    networks:
+      - net
+    restart: always
+    environment:
+      - AWS_ACCESS_KEY_ID=user
+      - AWS_SECRET_ACCESS_KEY=password
+      - MLFLOW_S3_ENDPOINT_URL=http://minio:9000
+    command: mlflow server --host 0.0.0.0 -p 5000 --default-artifact-root s3://artifacts --backend-store-uri postgresql://user:password@db_storage:5432/mlflow
+    expose:
+      - "5000"
+      
+  minio:
+    image: "minio/minio"
+    ports:
+      - "9000:9000"
+    networks:
+        - net
+    volumes:
+      - ./mlflow_data:/export
+    restart: always
+    environment:
+      - MINIO_ACCESS_KEY=user
+      - MINIO_SECRET_KEY=password
+    entrypoint: sh
+    command: -c "mkdir -p /export/artifacts && /usr/bin/minio server /export"
+    expose:
+      - "9000"
+      
+       
+  db_storage:
+    image: "postgres"
+    ports:
+      - "5432:5432"
+    networks:
+        - net
+    volumes:
+      - ./postgres_data:/var/lib/postgresql
+    restart: always
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_DB=mlflow
+
+    
+networks:
+    net:
+        driver: bridge

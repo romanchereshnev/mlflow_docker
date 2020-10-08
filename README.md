@@ -1,6 +1,8 @@
 # mlflow_docker
 Docker-compose file for [mlflow](https://mlflow.org/) server.
 
+Mlflow server uses [Postgresql](https://www.postgresql.org/) as backend storage and [minio](https://min.io/) as artifact storage.
+
 ## How to run
 
 1. Install [docker-compose](https://docs.docker.com/compose/install/)
